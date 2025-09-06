@@ -198,10 +198,17 @@
         fetch(url)
             .then(response => response.json())
             .then(data => {
-                console.log(data);
-                bebidasMap = {};
                 let productosDiv = document.getElementById('productos');
                 productosDiv.innerHTML = "";
+                if (!data.drinks) {
+                    productosDiv.innerHTML += `
+                        <div class=>
+                            <strong>No se encontraron bebidas, intentelo con otra cosa</strong>
+                        </div>
+                    `;
+                }
+                console.log(data);
+                bebidasMap = {};
 
                 data.drinks.forEach(bebida => {
                     bebidasMap[bebida.idDrink] = bebida;
