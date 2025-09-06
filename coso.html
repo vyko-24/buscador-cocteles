@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    form {
+        display: flex;
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        /* Include padding in element's total width/height */
+    }
+
+    input[type="search"] {
+        flex-grow: 1;
+        /* Allows the input to take available space */
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+    }
+
+    button[type="submit"] {
+        padding: 8px 15px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-left: 5px;
+    }
+
+    .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+    }
+
+    @media (min-width: 768px) {
+    }
+
+    .popup {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        justify-content: center;
+        align-items: center;
+    }
+
+    .popup-content {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        max-width: 300px;
+        text-align: left;
+    }
+
+    .close-btn {
+        float: right;
+        cursor: pointer;
+        color: red;
+        font-weight: bold;
+    }
+
+        /* Contenedor de resultados */
+    #productos {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        padding: 10px;
+    }
+
+    /* Tarjeta de bebida */
+    .card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .card strong {
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+
+    .card button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 6px 10px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    .card button:hover {
+        background-color: #0056b3;
+    }
+
+    .popup {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        justify-content: center;
+        align-items: center;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .popup-content {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        max-width: 90%;
+        width: 300px;
+        text-align: left;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+        from { transform: translateY(30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    ul {
+        padding-left: 20px;
+        margin: 0;
+    }
+</style>
+
+<body>
+
+    <form id="productoForm">
+        <label for="mobile-search" class="visually-hidden">Search</label>
+        <input type="search" id="coso" name="q" placeholder="Buscar cóctel..." aria-label="Search">
+        <button type="submit">buscar</button>
+    </form>
+
+    <div class="col-6 mt-3">
+        <div class="row" id="productos">
+
+        </div>
+    </div>
+
+  <div id="popup" class="popup">
+    <div class="popup-content">
+      <span class="close-btn" onclick="cerrarPopup()">X</span>
+      <h2 id="popup-titulo"></h2>
+      <p id="popup-instrucciones"></p>
+      <h3>Ingredientes:</h3>
+      <ul id="popup-ingredientes"></ul>
+    </div>
+  </div>
+
+</body>
+<script>
+    let bebidasMap = {};
+
+    var form = document.getElementById('productoForm');
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        let coctel = document.getElementById('coso') 
+            ? document.getElementById('coso').value 
+            : null;
+
+        let url = coctel 
+            ? 'https://www.thecocktaildb.com/api/json/v1/1/search.php?s=' + coctel 
+            : 'https://www.thecocktaildb.com/api/json/v1/1/search.php?s=';
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                bebidasMap = {};
+                let productosDiv = document.getElementById('productos');
+                productosDiv.innerHTML = "";
+
+                data.drinks.forEach(bebida => {
+                    bebidasMap[bebida.idDrink] = bebida;
+                    productosDiv.innerHTML += `
+                        <div class="card">
+                            <strong>${bebida.strDrink}</strong>
+                            <button type="button" data-id="${bebida.idDrink}" onclick="showCosas(this)">
+                                Ver más
+                            </button>
+                        </div>
+                    `;
+                });
+            })
+            .catch(error => console.error('Error:', error))
+    });
+
+    function showCosas(btn) {
+      const id = btn.getAttribute("data-id");
+      const bebida = bebidasMap[id];
+      if (!bebida) return alert("Bebida no encontrada");
+
+      document.getElementById("popup-titulo").innerText = bebida.strDrink;
+      document.getElementById("popup-instrucciones").innerText = bebida.strInstructionsES || bebida.strInstructions;
+
+      const ul = document.getElementById("popup-ingredientes");
+      ul.innerHTML = "";
+      for (let i = 1; i <= 15; i++) {
+        const ing = bebida[`strIngredient${i}`];
+        const cant = bebida[`strMeasure${i}`] || "";
+        if (ing) {
+          ul.innerHTML += `<li>${cant} ${ing}</li>`;
+        }
+      }
+
+      document.getElementById("popup").style.display = "flex";
+    }
+
+    function cerrarPopup() {
+      document.getElementById("popup").style.display = "none";
+    }
+
+    function limpiarFormulario() {
+        const form = document.getElementById('productoForm');
+        form.reset();
+    }
+</script>
+
+
+</html>
