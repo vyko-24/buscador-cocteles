@@ -175,6 +175,7 @@
       <h2 id="popup-titulo"></h2>
       <p id="popup-instrucciones"></p>
       <h3>Ingredientes:</h3>
+      <img id="popup-imagen" src="" alt="" style="width: 100%; border-radius: 8px; margin-bottom: 10px;">
       <ul id="popup-ingredientes"></ul>
     </div>
   </div>
@@ -215,6 +216,7 @@
                     productosDiv.innerHTML += `
                         <div class="card">
                             <strong>${bebida.strDrink}</strong>
+                                  <img id="popup-imagen" src="${bebida.strDrinkThumb}" alt="" style="width: 100%; border-radius: 8px; margin-bottom: 10px;">
                             <button type="button" data-id="${bebida.idDrink}" onclick="showCosas(this)">
                                 Ver más
                             </button>
